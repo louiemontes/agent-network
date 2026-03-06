@@ -21,7 +21,6 @@ services:
       - ./workspace:/workspace
     environment:
       - MCP_GATEWAY_URL=http://mcp-gateway:3100/sse
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
     networks:
       - agent-net
     stdin_open: true

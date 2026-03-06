@@ -7,7 +7,7 @@ import { z } from "zod";
 // ─── Supabase client (credentials never leave this container) ────────────────
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
+  process.env.SUPABASE_SERVICE_KEY,
 );
 
 // ─── MCP Server ──────────────────────────────────────────────────────────────
@@ -39,7 +39,7 @@ server.tool(
     return {
       content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
     };
-  }
+  },
 );
 
 // -- notes: create -------------------------------------------------------------
@@ -66,7 +66,7 @@ server.tool(
     return {
       content: [{ type: "text", text: `Created note with id: ${data.id}` }],
     };
-  }
+  },
 );
 
 // -- notes: update (content only, no ownership transfer) -----------------------
@@ -88,7 +88,7 @@ server.tool(
     return {
       content: [{ type: "text", text: `Updated note ${id}` }],
     };
-  }
+  },
 );
 
 // ─── INTENTIONALLY OMITTED ───────────────────────────────────────────────────
@@ -99,7 +99,9 @@ server.tool(
 
 // ─── Express + SSE transport ─────────────────────────────────────────────────
 const app = express();
-app.use(express.json());
+
+// NOTE: No global express.json() here — it consumes the request body stream
+// before the SSE transport can read it, causing "stream is not readable" errors.
 
 const transports = {}; // sessionId → SSEServerTransport
 
@@ -133,6 +135,6 @@ app.get("/health", (_, res) => res.json({ status: "ok" }));
 app.listen(3100, () => {
   console.log("[gateway] MCP gateway running on :3100");
   console.log(
-    `[gateway] Supabase URL: ${process.env.SUPABASE_URL ?? "NOT SET"}`
+    `[gateway] Supabase URL: ${process.env.SUPABASE_URL ?? "NOT SET"}`,
   );
 });

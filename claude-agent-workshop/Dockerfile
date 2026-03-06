@@ -3,13 +3,17 @@ FROM node:20-slim
 # Install Claude Code globally
 RUN npm install -g @anthropic-ai/claude-code
 
-# Create workspace mount point
-RUN mkdir -p /workspace
+# Create a non-root user (claude-code refuses to run as root with --dangerously-skip-permissions)
+RUN useradd -m -s /bin/bash agent
 
-# Drop in the MCP config so Claude Code auto-connects to the gateway
-RUN mkdir -p /root/.claude
-COPY mcp_config.json /root/.claude/mcp_config.json
+# Create workspace mount point and give the user ownership
+RUN mkdir -p /workspace && chown agent:agent /workspace
 
+# MCP config MUST live at ~/.claude.json — the ~/.claude/ directory is silently ignored
+COPY claude.json /home/agent/.claude.json
+RUN chown agent:agent /home/agent/.claude.json
+
+USER agent
 WORKDIR /workspace
 
 CMD ["bash"]
