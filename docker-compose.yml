@@ -1,0 +1,34 @@
+version: "3.8"
+
+services:
+  mcp-gateway:
+    build:
+      context: ./mcp-gateway
+    container_name: mcp-gateway
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - agent-net
+
+  claude-agent-workshop:
+    build:
+      context: ./claude-agent-workshop
+    container_name: claude-agent-workshop
+    depends_on:
+      - mcp-gateway
+    volumes:
+      - ./workspace:/workspace
+    environment:
+      - MCP_GATEWAY_URL=http://mcp-gateway:3100/sse
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    networks:
+      - agent-net
+    stdin_open: true
+    tty: true
+    working_dir: /workspace
+    command: bash
+
+networks:
+  agent-net:
+    driver: bridge
