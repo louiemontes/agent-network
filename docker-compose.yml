@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   mcp-gateway:
     build:
@@ -9,16 +11,28 @@ services:
     networks:
       - agent-net
 
+  playwright-service:
+    build:
+      context: ./playwright-service
+    container_name: playwright-service
+    restart: unless-stopped
+    networks:
+      - agent-net
+
   claude-agent-workshop:
     build:
       context: ./claude-agent-workshop
     container_name: claude-agent-workshop
     depends_on:
       - mcp-gateway
+      - playwright-service
     volumes:
       - ./workspace:/workspace
     environment:
       - MCP_GATEWAY_URL=http://mcp-gateway:3100/sse
+      - AGENT_GITHUB_TOKEN
+      - DISCORD_WEBHOOK_URL
+      - DISCORD_ALERTEE_USER_ID
     networks:
       - agent-net
     stdin_open: true

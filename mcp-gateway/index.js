@@ -97,6 +97,45 @@ server.tool(
 // Any DDL      → not exposed, agent cannot alter schema
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ─── Playwright: screenshot ───────────────────────────────────────────────────
+server.tool(
+  "take_screenshot",
+  "Take a screenshot of a URL and return it as a viewable image. Useful for visually inspecting a running app or page.",
+  {
+    url: z.string().url().describe("URL to screenshot"),
+    fullPage: z
+      .boolean()
+      .default(true)
+      .describe("Capture full scrollable page"),
+    width: z.number().int().default(1280).describe("Viewport width in px"),
+    height: z.number().int().default(900).describe("Viewport height in px"),
+  },
+  async ({ url, fullPage, width, height }) => {
+    const response = await fetch("http://playwright-service:3200/screenshot", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url, fullPage, width, height }),
+    });
+
+    if (!response.ok) {
+      const { error } = await response.json();
+      throw new Error(`Playwright error: ${error}`);
+    }
+
+    const { base64 } = await response.json();
+
+    return {
+      content: [
+        {
+          type: "image",
+          data: base64,
+          mimeType: "image/png",
+        },
+      ],
+    };
+  },
+);
+
 // ─── Express + SSE transport ─────────────────────────────────────────────────
 const app = express();
 

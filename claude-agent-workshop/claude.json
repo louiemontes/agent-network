@@ -3,6 +3,14 @@
     "gateway": {
       "type": "sse",
       "url": "http://mcp-gateway:3100/sse"
+    },
+    "github": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${AGENT_GITHUB_TOKEN}"
+      }
     }
   }
 }
